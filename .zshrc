@@ -120,8 +120,27 @@ alias ls="ls -la --color=always"
 #   export EDITOR='mvim'
 # fi
 
+# Setup Ruby
+
+# If you need to have ruby first in your PATH run:
+export PATH="/usr/local/opt/ruby/bin:$PATH"
+export LDFLAGS="-L/usr/local/opt/ruby/lib"
+export CPPFLAGS="-I/usr/local/opt/ruby/include"
+
+# For pkg-config to find ruby you may need to set:
+export PKG_CONFIG_PATH="/usr/local/opt/ruby/lib/pkgconfig"
+
+# For adding gems to path
+export PATH=/usr/local/opt/ruby/bin:$PATH
+export PATH=/usr/local/lib/ruby/gems/2.5.0/bin:$PATH
+export PATH=/usr/local/lib/ruby/gems/2.6.0/bin:$PATH
+
+
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
+
+# Setup GOlang
+export GOPATH=$HOME/go
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -132,17 +151,43 @@ alias ls="ls -la --color=always"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Alias for Terraform
+alias tf="terraform"
+alias tf12="terraform12"
+
 # Aliases for kubens and kubectx
 alias kns="kubens"
-alias kcx="kubectx"
+alias kx="kubectx"
+
+# function to reverse engineer a Dockerfile from image
+function docker_trace() {
+  local parent=`docker inspect -f '{{ .Parent }}' $1` 2>/dev/null
+  declare -i level=$2
+  echo ${level}: `docker inspect -f '{{ .ContainerConfig.Cmd }}' $1 2>/dev/null`
+  level=level+1
+  if [ "${parent}" != "" ]; then
+    echo ${level}: $parent
+    docker_trace $parent $level
+  fi
+}
 
 # quick function to decode kubernetes secrets
 function decode_kubernetes_secret {
   kubectl get secret $@ -o json | jq '.data | map_values(@base64d)'
 }
-alias ds="decode_kubernetes_secret"
+alias dks="decode_kubernetes_secret"
+
+# ALias teleprescence to tp for debugging
+alias tp="telepresence"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
-export PATH="$HOME/.bin:$PATH"
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/callum.anderson/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/callum.anderson/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/callum.anderson/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/callum.anderson/google-cloud-sdk/completion.zsh.inc'; fi
+if [ /usr/local/bin/kubectl ]; then source <(kubectl completion zsh); fi
+
+export PATH="/usr/local/opt/ruby/bin:$PATH"
